@@ -2,62 +2,38 @@
 
 . ./tool/ventoy_lib.sh
 
-print_usage() {
-
-    echo 'Usage:  Ventoy2Disk.sh CMD [ OPTION ] /dev/sdX'
-    echo '  CMD:'
-    echo '   -i  install Ventoy to sdX (fails if disk already installed with Ventoy)'
-    echo '   -I  force install Ventoy to sdX (no matter if installed or not)'
-    echo '   -u  update Ventoy in sdX'
-    echo '   -l  list Ventoy information in sdX'
-    echo ''
-    echo '  OPTION: (optional)'
-    echo '   -r SIZE_MB  preserve some space at the bottom of the disk (only for install)'
-    echo '   -s/-S       enable/disable secure boot support (default is enabled)'
-    echo '   -g          use GPT partition style, default is MBR (only for install)'
-    echo '   -L          Label of the 1st exfat partition (default is Ventoy)'
-    echo '   -n          try non-destructive installation (only for install)'
-    echo ''
-}
-
-
-SECUREBOOT="YES"
+DISK=$(gum input --placeholder '/dev/sdX' --prompt.foreground 212 --prompt "Which Block Device Do You Want To Modify? > ")
 VTNEW_LABEL='Ventoy'
 RESERVE_SIZE_MB=0
-while [ -n "$1" ]; do
-    if [ "$1" = "-i" ]; then
+MOD=$(gum table -f tool/gum/modes.csv -w 13,67 --height 15 --header.foreground 222 --cell.border rounded --cell.foreground 222 | cut -d ',' -f 1)
+OPT=$(gum choose --no-limit --item.foreground 222 --cursor-prefix "[ ] " --selected-prefix "[✓] " --selected "Secure Boot: default is enabled" < tool/gum/options.md | cut -d ':' -f1)
+export LC_CTYPE="en_US.UTF-8"
+    if [ "$MOD" = "Install" ]; then
         MODE="install"
-    elif [ "$1" = "-I" ]; then
+    elif [ "$MOD" = "Force Install" ]; then
         MODE="install"
         FORCE="Y"
-    elif [ "$1" = "-n" ]; then
+    elif [ "$OPT" = *"Non-Destructive Installation"* ]; then
         NONDESTRUCTIVE="Y"
-    elif [ "$1" = "-u" ]; then
+    elif [ "$MOD" = "Update" ]; then
         MODE="update"
-    elif [ "$1" = "-l" ]; then
+    elif [ "$MOD" = "List" ]; then
         MODE="list"
-    elif [ "$1" = "-s" ]; then
+    elif [ "$OPT" = *"Secure Boot"* ]; then
         SECUREBOOT="YES"
-    elif [ "$1" = "-S" ]; then
+    elif ! [ "$OPT" = *"Secure Boot"* ]; then
         SECUREBOOT="NO"
-    elif [ "$1" = "-g" ]; then
-        VTGPT="YES"
-    elif [ "$1" = "-L" ]; then
+    elif [ "$OPT" = *"List Partition"* ]; then
         shift
         VTNEW_LABEL=$1
-    elif [ "$1" = "-r" ]; then
+    elif [ "$OPT" = "Reserve Space" ]; then
         RESERVE_SPACE="YES"
-        shift
-        RESERVE_SIZE_MB=$1
-    elif [ "$1" = "-V" ] || [ "$1" = "--version" ]; then
-        exit 0
-    elif [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
-        print_usage
+		RESERVE_SIZE_MB=$(gum input --placeholder 32 --prompt.foreground 212 --prompt "How Much Space Do You Want to Reserve? > ")
+    elif [ "$MODE" = "Version" ]; then
         exit 0
     else
-        if ! [ -b "$1" ]; then
-            vterr "$1 is NOT a valid device"
-            print_usage
+        if ! [ -b "$DISK" ]; then
+            vterr "$DISK is NOT a valid device"
             exit 1
         fi
         DISK=$1
@@ -70,12 +46,8 @@ while [ -n "$1" ]; do
     fi
 
     shift
-done
 
-if [ -z "$MODE" ]; then
-    print_usage
-    exit 1
-fi
+gum confirm "What Partition Style Do You Want To Use?" --affirmative "MBR" --negative "GPT" --timeout 5s --unselected.bold --selected.bold --unselected.italic --selected.italic --selected.underline --prompt.border rounded --prompt.border-foreground 212 --prompt.italic --prompt.bold || VTGPT="YES"
 
 if ! [ -b "$DISK" ]; then
     vterr "Disk $DISK does not exist"
@@ -85,8 +57,8 @@ fi
 if [ -e /sys/class/block/${DISK#/dev/}/start ]; then
     vterr  "$DISK is a partition, please use the whole disk."
     echo   "For example:"
-    vterr  "    sudo sh Ventoy2Disk.sh -i /dev/sdb1 <=== This is wrong"
-    vtinfo "    sudo sh Ventoy2Disk.sh -i /dev/sdb  <=== This is right"
+    vterr  "/dev/sdb1 <=== This is wrong"
+    vtinfo "/dev/sdb  <=== This is right"
     echo ""
     exit 1
 fi

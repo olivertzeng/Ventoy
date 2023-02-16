@@ -1,0 +1,6 @@
+Modes,Description
+Install,install Ventoy to sdX (fails if disk already installed with Ventoy)
+Force Install,force install Ventoy to sdX (no matter if installed or not)
+Update,update Ventoy in sdX
+List,list Ventoy information in sdX
+Version,show Ventoy version

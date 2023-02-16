@@ -5,6 +5,7 @@ VENTOY_PART_SIZE=33554432
 VENTOY_PART_SIZE_MB=32
 VENTOY_SECTOR_SIZE=512
 VENTOY_SECTOR_NUM=65536
+export LC_CTYPE="en_US.UTF-8"
 
 ventoy_false() {
     [ "1" = "2" ]
@@ -210,7 +211,7 @@ wait_and_create_part() {
     vPART1=$1
     vPART2=$2
     echo 'Wait for partitions ...'
-    for i in 0 1 2 3 4 5 6 7 8 9; do
+    for i in {"0".."9"}; do
         if ls -l $vPART1 2>/dev/null | grep -q '^b'; then
             if ls -l $vPART2 2>/dev/null | grep -q '^b'; then
                 break
@@ -342,7 +343,7 @@ EOF
 
 
     echo 'Wait for partitions ...'
-    for i in 0 1 2 3 4 5 6 7 8 9; do
+    for i in {"0".."9"}; do
         if [ -b $PART1 -a -b $PART2 ]; then
             break
         else
@@ -371,7 +372,7 @@ EOF
     fi
 
     echo "create efi fat fs $PART2 ..."
-    for i in 0 1 2 3 4 5 6 7 8 9; do
+    for i in {"0".."9"}; do
         check_umount_disk "$PART2"
 
         if mkfs.vfat -F 16 -n VTOYEFI -s 1 $PART2; then
@@ -459,7 +460,7 @@ format_ventoy_disk_gpt() {
     echo "Done"
 
     echo 'Wait for partitions ...'
-    for i in 0 1 2 3 4 5 6 7 8 9; do
+    for i in {"0".."9"}; do
         if [ -b $PART1 -a -b $PART2 ]; then
             break
         else
@@ -489,7 +490,7 @@ format_ventoy_disk_gpt() {
 
     echo "create efi fat fs $PART2 ..."
     
-    for i in 0 1 2 3 4 5 6 7 8 9; do
+    for i in {"0".."9"}; do
         check_umount_disk "$PART2"
         
         if mkfs.vfat -F 16 -n VTOYEFI -s 1 $PART2; then
@@ -501,8 +502,3 @@ format_ventoy_disk_gpt() {
         fi
     done
 }
-
-
-
-
-
