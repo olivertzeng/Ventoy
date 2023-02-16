@@ -1,5 +1,15 @@
 #!/bin/sh
 
+export LC_CTYPE="en_US.UTF-8"
+export GUM_SPIN_SHOW_OUTPUT="true"
+export MARGIN="1 2"
+export PADDING="2 4"
+export WIDTH="50"
+export ALIGN="center"
+export BOLD="true"
+export FOREGROUND=212
+export BORDER="double"
+export BORDER_FOREGROUND=212
 OLDDIR=$(pwd)
 
 if ! [ -f ./tool/ventoy_lib.sh ]; then
@@ -24,25 +34,19 @@ fi
 export PATH="./tool/$TOOLDIR:$PATH"
 
 
-echo ''
-echo '**********************************************'
-echo "      Ventoy: $curver  $TOOLDIR"
-echo "      longpanda admin@ventoy.net"
-echo "      https://www.ventoy.net"
-echo '**********************************************'
-echo ''
+gum style "Ventoy: $curver  $TOOLDIR" "longpanda admin@ventoy.net" "https://www.ventoy.net"
 
 
 if ! [ -f ./boot/boot.img ]; then
     if [ -d ./grub ]; then
-        echo "Don't run Ventoy2Disk.sh here, please download the released install package, and run the script in it."
+        gum style --foreground 9 "Don't run Ventoy2Disk.sh here, please download the released install package, and run the script in it."
     else
-        echo "Please run under the correct directory!" 
+        gum style --foreground 9 "Please run under the correct directory!" 
     fi
     exit 1
 fi
 
-echo "############# Ventoy2Disk $* [$TOOLDIR] ################" >> ./log.txt
+gum style "Ventoy2Disk $* [$TOOLDIR]" >> ./log.txt
 date >> ./log.txt
 
 #decompress tool

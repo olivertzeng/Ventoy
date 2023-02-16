@@ -1,5 +1,15 @@
 #!/bin/sh
 
+export LC_CTYPE="en_US.UTF-8"
+export GUM_SPIN_SHOW_OUTPUT="true"
+export MARGIN="1 2"
+export PADDING="2 4"
+export WIDTH="50"
+export ALIGN="center"
+export BOLD="true"
+export FOREGROUND=212
+export BORDER="rounded"
+export BORDER_FOREGROUND=92
 VTOY_PATH=$PWD/..
 
 cilog() {
@@ -7,24 +17,28 @@ cilog() {
     echo "$datestr $*"
 }
 
+cialog() {
+    gum style "$(cilog $1)"
+}
+
 LOG=$VTOY_PATH/DOC/build.log
 [ -f $LOG ] && rm -f $LOG
 
 cd $VTOY_PATH/DOC
-cilog "prepare_env ..."
+cialog "prepare_env ..."
 sh prepare_env.sh
 
 export PATH=$PATH:/opt/gcc-linaro-7.4.1-2019.02-x86_64_aarch64-linux-gnu/bin:/opt/aarch64--uclibc--stable-2020.08-1/bin:/opt/mips-loongson-gcc7.3-linux-gnu/2019.06-29/bin/:/opt/mips64el-linux-musl-gcc730/bin/
 
-cilog "build grub2 ..."
+cialog "build grub2 ..."
 cd $VTOY_PATH/GRUB2
 sh buildgrub.sh >> $LOG 2>&1 || exit 1
 
-cilog "build ipxe ..."
+cialog "build ipxe ..."
 cd $VTOY_PATH/IPXE
 sh buildipxe.sh >> $LOG 2>&1 || exit 1
 
-cilog "build edk2 ..."
+cialog "build edk2 ..."
 cd $VTOY_PATH/EDK2
 sh buildedk.sh >> $LOG 2>&1 || exit 1
 
@@ -75,7 +89,7 @@ if [ "$1" = "CI" ]; then
     sed "s/VENTOY_VERSION=.*/VENTOY_VERSION=\"$Ver\"/"  -i ./grub/grub.cfg
 fi
 
-cilog "packing ventoy-$Ver ..."
+cialog "packing ventoy-$Ver ..."
 sh ventoy_pack.sh $1 >> $LOG 2>&1 || exit 1
 
 echo -e '\n============== SUCCESS ==================\n'
